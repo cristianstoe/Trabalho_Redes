@@ -96,7 +96,7 @@ void recebeFile()
 
   addr_recv.sin_family = AF_INET;
   addr_recv.sin_port = htons(PORTA_PEER);
-  addr_recv.sin_addr.s_addr = inet_addr(buf);
+  addr_recv.sin_addr.s_addr = inet_addr("127.0.0.1");
 
   struct timeval read_timeout;
   read_timeout.tv_sec = 2;

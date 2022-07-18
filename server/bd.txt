@@ -1,1 +1,2 @@
-127.0.0.3 sample-video.mp4
+127.0.0.1 sample-photo.png
+127.0.0.1 sample-video.mp4
