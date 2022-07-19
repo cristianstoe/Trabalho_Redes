@@ -27,43 +27,44 @@ void removeCFromString(char *string, char c)
     }
   }
 }
-
+// essa função busca o ip corresponde ao nome do arquivo informado
 void getIpForFile(char *requestedFileName, char *rtrIp)
 {
   char ip[16], fileName[32];
   int i;
 
-  FILE *file = fopen("bd.txt", "rt");
+  FILE *file = fopen("bd.txt", "rt"); //le o arquivo txt com o mapeamento
 
-  while ((fscanf(file, "%s %s\n", &ip, &fileName)) != EOF)
+  while ((fscanf(file, "%s %s\n", &ip, &fileName)) != EOF) //enquanto nao for o final do arquivo copia as informações salvas em ip e filename
   {
 
-    if ((strcmp(fileName, requestedFileName)) == 0)
+    if ((strcmp(fileName, requestedFileName)) == 0) //compara as variaveis para ver se o nome do arquivo corresponde aos filename e se sim 
     {
-      fclose(file);
+      fclose(file); //fecha o arquivo pois achou um ip corresponde
 
-      strcpy(rtrIp, ip);
-      return;
+      strcpy(rtrIp, ip); //copia o ip
+      return; //sai da função
     }
   }
-
+  //se passou pelo while entao nao achou o nome na tabela, entao copia o ip 0.0.0.0 para informar que nao achou e fecha o arquivo
   strcpy(rtrIp, "0.0.0.0");
   fclose(file);
 }
 
+//inicia o servidor
 void startServer()
 {
-  struct sockaddr_in si_me, si_other;
+  struct sockaddr_in si_me, si_other; //inicia dois struct si_me = servidor e si_other = cliente_recebe
 
   int s;
   int slen = sizeof(si_other), recv_len;
   char buf[TAMBUFFER];
-
+  //verifica se inicia o socket certo
   if ((s = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
   {
     encerra("socket");
   }
-
+  
   memset((char *)&si_me, 0, sizeof(si_me));
 
   si_me.sin_family = AF_INET;
@@ -83,8 +84,9 @@ void startServer()
     printf("\nEsperando requisicoes\n");
     fflush(stdout);
 
+    //outra maneira de zerar o buffer 
     bzero(buf, TAMBUFFER);
-
+    
     if ((recv_len = recvfrom(s, buf, TAMBUFFER, 0, (struct sockaddr *)&si_other, &slen)) == -1)
     {
       encerra("Erro recebendo o nome do arquivo\n");

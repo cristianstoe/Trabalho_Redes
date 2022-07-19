@@ -96,43 +96,48 @@ void recebeFile()
 
   addr_recv.sin_family = AF_INET;
   addr_recv.sin_port = htons(PORTA_PEER);
-  addr_recv.sin_addr.s_addr = inet_addr("127.0.0.1");
+  addr_recv.sin_addr.s_addr = inet_addr(buf);
 
+  
   struct timeval read_timeout;
   read_timeout.tv_sec = 2;
   read_timeout.tv_usec = 0;
 
+  //a funçao abaixo ira alterar as opções do socket sPeer para o temporizador 
   setsockopt(sPeer, SOL_SOCKET, SO_RCVTIMEO, &read_timeout, sizeof read_timeout);
 
+  //envia o pedido do arquivo
   if (sendto(sPeer, fileName, strlen(fileName), 0, (struct sockaddr *)&addr_recv, sPeerlen) == -1)
   {
     encerra("Erro enviando a requisicao\n");
   }
 
-  int checksum_error = 0;
+  int checksum_error = 0; //a variavel checksum começa com o valor 0
 
-  FILE *fp;
-  char fileDownloadName[TAMBUFFER];
-  sprintf(fileDownloadName, "%s", fileName);
+  FILE *fp; //inicia um ponteiro FILE
+  char fileDownloadName[TAMBUFFER]; //Define uma variavel para o arquivo 
+  sprintf(fileDownloadName, "%s", fileName); //Converte para string o nome do arquivo 
 
-  fp = fopen(fileDownloadName, "w+");
+  fp = fopen(fileDownloadName, "w+"); //agora pode criar o arquivo com o nome correto
 
+  //enquanto estiver recebendo dados
   while (recvfrom(sPeer, &packet, sizeof(packet), 0, (struct sockaddr *)&addr_recv, &sPeerlen) > 0)
   {
     unsigned long result;
     result = hash(packet.data);
-
-    if (packet.checksum != result)
+    //recebe o pacote e aplica a funçao hash para calcular o valor do checksum, depois verifica se esse valor é igual ao checksum enviado com o pacote
+    if (packet.checksum != result) //Se diferer é erro
     {
       printf("Numero de sequencia errado %d\n", packet.seqn);
-      checksum_error++;
+      checksum_error++; //em caso de erro incrementa o valor de checksum_error
     }
 
-    fwrite(packet.data, sizeof(packet.data), 1, fp);
+    fwrite(packet.data, sizeof(packet.data), 1, fp); //Salva as informações recebidas.
   }
-
+  //depois de receber tudo fecha o arquivo
   fclose(fp);
 
+  //ve se houve erros no checksum
   if (checksum_error > 0)
   {
     printf("Erro na check sum de %d pacotes.\n", checksum_error);
